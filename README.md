@@ -1,0 +1,1 @@
+This is a portfolio of the work completed by Bernard Connelly during my Master's Degree program at Western Governor's University between July 2024 and July 2025. Included in this file are summaries, reports, Jupyter Notebooks, Dashboards & Panopto Videos of each Performance Assessment required for the degree.
