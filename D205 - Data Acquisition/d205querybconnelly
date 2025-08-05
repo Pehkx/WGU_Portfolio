@@ -1,0 +1,51 @@
+DROP TABLE addon_services
+
+-- CREATION OF ADD-IN CSV TABLE
+CREATE TABLE public.addon_services
+	(
+		customer_id char (7) NOT NULL,
+		internetservice varchar(11),
+		phone varchar(3),
+		multiple varchar(3),
+		onlinesecurity varchar(3),
+		onlinebackup varchar(3),
+		deviceprotection varchar(3),
+		techsupport varchar(3),
+		PRIMARY KEY (customer_id),
+		CONSTRAINT customer_id_fkey FOREIGN KEY (customer_id)
+			REFERENCES customer(customer_id) MATCH SIMPLE
+			ON UPDATE NO ACTION
+			ON DELETE NO ACTION		
+	);
+
+--Demonstrating table was created
+select * from addon_services
+
+--Importing data from the csv file into the addon_services table
+COPY addon_services
+FROM 'C:\LabFiles\Services.csv'
+DELIMITER ','
+CSV HEADER;
+--Demonstrating data was imported to the table
+select * from addon_services
+
+--Confirming postgres is the current owner of the table for editing purposes
+SELECT tablename, tableowner
+FROM pg_tables
+where tablename = 'addon_services';
+
+--Query to identify fields used to answer the research question
+SELECT serv.customer_id, serv.internetservice, serv.onlinesecurity, cust.techie
+FROM addon_services serv
+LEFT JOIN public.customer cust on cust.customer_id = serv.customer_id;
+
+
+--Query to show customers who self-identify as techies and opt in/out for online security
+SELECT
+	c.techie,
+	COUNT(CASE WHEN a.onlinesecurity = 'No' THEN 1 END) AS without_online_security,
+	COUNT(CASE WHEN a.onlinesecurity = 'Yes' THEN 1 END) AS with_online_security
+FROM customer c
+INNER JOIN addon_services a ON c.customer_id = a.customer_id
+GROUP BY c.techie
+ORDER BY c.techie desc;
