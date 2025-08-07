@@ -1,0 +1,100 @@
+-- Creation of education table
+CREATE TABLE education
+	(
+		state varchar(7),
+		area_type varchar(30),
+		county varchar(100) NOT NULL,
+		less_than_a_high_school_diploma int,
+		high_school_degree_only int,
+		some_college_or_associates_degree int,
+		bachelors_degree_or_higher int,
+		percent_less_than_a_high_school_diploma float,
+		percent_high_school_degree_only float,
+		percent_some_college_or_associates_degree float,
+		percent_bachelors_degree_or_higher float	
+	);
+
+-- Importing data from the Tableau Prep cleaned dataset
+COPY education
+FROM 'C:\Users\Public\cleaned_education.csv'
+DELIMITER ','
+CSV HEADER;
+
+-- Confirming import worked
+SELECT * FROM education LIMIT(10);
+
+-- Checking the table for null values
+SELECT *
+FROM education
+WHERE state IS NULL
+OR area_type IS NULL
+OR county IS NULL
+OR less_than_a_high_school_diploma IS NULL
+OR high_school_degree_only IS NULL
+OR some_college_or_associates_degree IS NULL
+OR bachelors_degree_or_higher IS NULL
+OR percent_less_than_a_high_school_diploma IS NULL
+OR percent_high_school_degree_only IS NULL
+OR percent_some_college_or_associates_degree IS NULL
+OR percent_bachelors_degree_or_higher IS NULL;
+
+-- Removing rows with null values for eduction
+DELETE FROM education 
+WHERE less_than_a_high_school_diploma IS NULL;
+
+-- Adding values to area_type that are null
+UPDATE education
+SET area_type = 'State' -- Setting area_type to state for US States + Territories
+WHERE area_Type IS NULL;
+
+UPDATE education
+SET area_type = 'Country' -- Setting area_type to Country for whole country
+WHERE state = 'US';
+
+-- Removing all values which do not align to the State level
+DELETE FROM education
+WHERE area_type != 'State';
+
+--Checking to confirm cleaning worked
+SELECT * FROM education;
+
+-- Making State the Primary Key in education
+ALTER TABLE education
+ADD CONSTRAINT pk_state PRIMARY KEY (state);
+
+--Creating Unique Constraint on State Column in education
+ALTER TABLE education
+ADD CONSTRAINT unique_state unique(State);
+
+--Creating Foreign Key to Maintain Referential Integrity
+ALTER TABLE location
+ADD CONSTRAINT fk_education_id
+FOREIGN KEY (state)
+REFERENCES education (state);
+
+--Syntax to check table constraints. Just change table name in quotes
+SELECT tc.constraint_name, tc.constraint_type, kcu.column_name
+FROM information_schema.table_constraints as tc
+JOIN information_schema.key_column_usage as kcu
+ON tc.constraint_name = kcu.constraint_name
+AND tc.table_name = kcu.table_name
+WHERE tc.table_name = 'education';
+
+--Joining Education to Location + checking for null values
+SELECT *
+FROM location as l
+LEFT JOIN education AS e
+on l.state = e.state
+WHERE e.state IS NULL
+OR e.area_type IS NULL
+OR e.county IS NULL
+OR e.less_than_a_high_school_diploma IS NULL
+OR e.high_school_degree_only IS NULL
+OR e.some_college_or_associates_degree IS NULL
+OR e.bachelors_degree_or_higher IS NULL
+OR e.percent_less_than_a_high_school_diploma IS NULL
+OR e.percent_high_school_degree_only IS NULL
+OR e.percent_some_college_or_associates_degree IS NULL
+OR e.percent_bachelors_degree_or_higher IS NULL;
+
+
